@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<link rel="stylesheet" type="text/css" href="css/bulma.css">
+	<script type="text/javascript" src="js/vue.js"></script>
+	<script type="text/javascript" src="js/axios.js"></script>
+</head>
+<body>
+
+<main class="container">
+	<section class="section">
+		<div class="box" style="width: 500px" id="root">
+			<form method="POST" action="http://localhost:8000/login" @submit.prevent="doLogin">
+			    <div class="field">
+					<label class="label">E-Mail</label>
+					<div class="control">
+					<input class="input" type="text" name="list_name" v-model="email" placeholder="Text input">
+				</div>
+				<div class="field">
+					<label class="label">Password</label>
+					<div class="control">
+					<input class="input" type="text" name="list_name" v-model="password" placeholder="Text input">
+				</div>
+				<div class="field">
+					<div class="control">
+						<button class="button is-primary" @click="display">Login</button>
+					</div>
+				</div>								
+			</form>
+
+			
+			{{ token.token }}
+			{{ token.token }}
+
+			<ul>
+				<li v-for="error in errors" v-text="error" style="color: red"></li>
+			</ul>
+
+		</div>
+	</section>
+
+		<div id="test">
+			{{ token.token }}
+		</div>
+</main>
+
+</body>
+</html>
+
+<script type="text/javascript">
+
+	let source = {
+		token : null
+	};
+
+	new Vue ({
+		el: '#root',
+		data: {
+			email : '',
+			password : '',
+
+			token : source,
+			errors : null,
+		},
+
+		methods: {
+			doLogin: function() {
+	    		axios
+			    	.get('http://localhost:8000/login?email=' + this.email + '&password=' + this.password)
+			    	.then(response => (source.token = response.data.remember_token ))
+			    	.catch(error => (console.log(this.errors = error.response.data))) //console.log(error.response.data))
+
+	      			console.log({ list_name: this.list_name, distance: this.distance, user_id: this.user_id });
+	    	},
+	    	display: function() {
+	    		return this.token.token;
+	    	}
+		}
+
+	});
+
+	new Vue ({
+		el: '#test',
+		data: {
+			token : source
+		}
+
+	});
+
+</script>

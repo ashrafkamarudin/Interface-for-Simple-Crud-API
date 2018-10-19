@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<link rel="stylesheet" type="text/css" href="css/bulma.css">
+	<script type="text/javascript" src="js/vue.js"></script>
+	<script type="text/javascript" src="js/axios.js"></script>
+
+	<style type="text/css">
+		.hasLoad { display: none; }
+		.loadTable {display: none; }
+	</style>
+
+</head>
+<body>
+
+<main class="container">
+	<section class="section" id="login">
+		<div class="box" style="width: 450px;margin: 100px auto auto auto" v-if="token.token == null" >
+			<h4 class="title" align="center">Login-Crud API</h3>
+			<h6 class="subtitle" align="center">Simple Interface for this Login-Crud API</h3>
+			<hr>
+			<form method="POST" action="http://localhost:8000/login" @submit.prevent="doLogin" style="padding-bottom: 30px">
+			    <div class="field">
+					<label class="label">E-Mail</label>
+					<div class="control">
+						<input class="input" type="text" name="list_name" v-model="email" placeholder="Text input">
+					</div>
+				</div>
+				<div class="field">
+					<label class="label">Password</label>
+					<div class="control">
+						<input class="input" type="password" name="list_name" v-model="password" placeholder="Text input">
+					</div>
+				</div>
+				<div class="control">
+					<button class="button is-primary">Login</button>
+				</div>					
+			</form>
+
+			
+			{{ token.token }}
+
+			<ul v-if="errors">
+				<li>Return Messages : </li>
+				<li v-for="error in errors" v-text="error" style="color: red"></li>
+			</ul>
+
+		</div>
+	</section>
+	<section class="section">
+		<div class="container">
+
+			<div class="columns">
+			  <div class="column" id="table">
+				<div class="box" v-if="token.token">
+					
+					<button class="button is-primary" :class="{ 'hasLoad': hasLoad}" @click="getList" >Load Data</button>
+					<tabs :class="{ 'hasLoad': tableLoad}">
+    					<tab name="Table Data" :selected="true">
+			    				
+							<table class="table">
+								<thead>
+									<th>#</th>
+									<th>List Name</th>
+									<th>Distance</th>
+									<th>User ID</th>
+									<th>Action</th>
+								</thead>
+								<tbody>
+									<tr v-for="listing in token.data">
+										<td> {{ listing.id }} </td>
+										<td  v-text="listing.list_name"></td>
+										<td  v-text="listing.distance"></td>
+										<td  v-text="listing.user_id"></td>
+										<td>
+											<form method="POST" action="" @submit.prevent="deleteForm(listing.id)">
+												<input type="hidden" name="_method" value="delete" />
+												<button class="button is-primary">Delete</button>
+											</form>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+    					</tab>
+
+    					<tab name="Raw">
+			    			{{ data }}	
+    					</tab>
+  					</tabs>
+
+				</div>
+			    
+			  </div>
+			  <div class="column" id="form">
+			  		<div class="box" v-if="token.token">
+			  			<form>
+			  				<div class="field">
+			  					<label class="label">Current Host : {{ token.host }} </label>
+								<div class="control">
+							   		<input class="input" :class="{ 'is-danger': listName}" type="text" v-model="inputHost" >
+						  		</div>
+			  				</div>
+
+							<div class="control">
+			  					<button class="button is-primary" @click="setHost">Change Host</button>
+							</div>
+			  			</form>
+
+			  		</div>
+			  		<div class="box" v-if="token.token">
+  						<tabs>
+    						<tab name="Create Form" :selected="true">
+			    				<form method="POST" action="http://localhost:8000/api/listing?remember_token=ajBWc1ZQR1hNeGlzeUtjYjAwMzRXRjNBTjhHUTQ2TjZzUXROcDNDWA==" @submit.prevent="postForm">
+			    					<div class="field">
+										<label class="label">List Name</label>
+								  		<div class="control">
+								    		<input class="input" :class="{ 'is-danger': listName}" type="text" name="list_name" v-model="list_name" placeholder="Text input">
+								  		</div>
+									</div>
+
+									<div class="columns">
+										<div class="column">
+											<div class="field">
+											  <label class="label">User ID</label>
+											  <div class="control">
+											    <input class="input" type="text" name="user_id" v-model="user_id" placeholder="Text input">
+											  </div>
+											</div>
+										</div>
+										<div class="column">
+											<div class="field">
+											  <label class="label">Distance</label>
+											  <div class="control">
+											    <input class="input" type="text" name="distance" v-model="distance" placeholder="Text input">
+											  </div>
+											</div>
+										</div>
+									</div>
+									<div class="control">
+									  <button class="button is-primary">Create New</button>
+									</div>
+						    	</form>
+    						</tab>
+    						<tab name="Update Form">
+			    					<form method="POST" action="http://localhost:8000/api/listing?remember_token=ajBWc1ZQR1hNeGlzeUtjYjAwMzRXRjNBTjhHUTQ2TjZzUXROcDNDWA==" @submit.prevent="putForm">
+			    						<input type="hidden" name="_method" value="put" />
+			    						<div class="field">
+						  					<label class="label">List Name</label>
+						  					<div class="control">
+						    					<input class="input" :class="{ 'is-danger': listName}" type="text" name="list_name" v-model="list_name" placeholder="Text input">
+						  					</div>
+										</div>
+
+									<div class="columns">
+										<div class="column">
+											<div class="field">
+											  <label class="label">List ID</label>
+											  <div class="control">
+											    <input class="input" type="text" name="list_id" v-model="list_id" placeholder="Text input">
+											  </div>
+											</div>
+										</div>
+										<div class="column">
+											<div class="field">
+											  <label class="label">User ID</label>
+											  <div class="control">
+											    <input class="input" type="text" name="user_id" v-model="user_id" placeholder="Text input">
+											  </div>
+											</div>
+										</div>
+										<div class="column">
+											<div class="field">
+											  <label class="label">Distance</label>
+											  <div class="control">
+											    <input class="input" type="text" name="distance" v-model="distance" placeholder="Text input">
+											  </div>
+											</div>
+										</div>
+									</div>
+									<div class="control">
+									  <button class="button is-primary">Update</button>
+									</div>
+						    	</form>
+    						</tab>
+  						</tabs>
+					</div>
+			    	<div v-if="errors" class="box">
+					    <ul>
+					    	<li v-for="error in errors" v-text="error" style="color: red"></li>
+					    </ul>
+			   		</div>
+			  	</div>
+			</div>
+		</section>
+	</main>
+
+</body>
+</html>
+
+<script type="text/javascript" src="js/tab.js"></script>
+<script type="text/javascript" src="js/app.js"></script>
